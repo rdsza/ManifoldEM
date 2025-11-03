@@ -52,7 +52,7 @@ recommended to keep an environment purely for `ManifoldEM`.
   Before running FI-ManifoldEM, you will need to have run 3D refinement on your dataset using your cryo-EM analysis software of choice.
   ManifoldEM requires (at minimum) the following parameters within the alignment `.star` file: Image Name; Angle Rot; Angle Tilt; Angle Psi; Origin X; Origin Y; Defocus U; Defocus V; Voltage and Spherical Aberration. To note, ManifoldEM is not currently set up to calculate elliptical defocus; instead, it treats all cases of defocus as spherical. As well, although the software is set up to handle image recentering, if your original micrographs are available, we recommend recentering before ManifoldEM (and thus also setting Origin X and Origin Y values in the alignment file to zero) as to avoid introduction of padding artifacts that could lower the fidelity of the distance matrix. Additionally, the `.mrcs` image stack, will need to be a single file. If you have multiple image stacks, we recommend combining them into a single stack with e.g. `relion_stack_create`. Notably, the average volume file will only be used to help navigate through projection directions (PDs) in the GUI, and is not actually used within the algorithm.
   
-## Good to know as your initialize your datasets
+### Important tips for choosing the Aperture Index
   
   Shannon Angle and Angle Width are calculated from your inputs, and will automatically re-adjust as the user inputs are altered. 
   
@@ -94,7 +94,41 @@ Which tells you "The PD with the most images is 52 with 565 images." Since Pytho
 
 ![](https://raw.githubusercontent.com/flatironinstitute/ManifoldEM/docs-updates/tutorial/images/psi_1.gif)
 
-** Still to add the second part of this tutorial.
+In order to assign an anchor node to each cluster, we first need to figure out which PDs belong to which cluster. Using the same setup as above, continue on with:
+```
+> prds.cluster_ids 
+array([0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1,
+       0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0,
+       1, 0, 1, 0, 1, 0, 1, 0, 1])
+
+> cluster1 = np.where(prds.cluster_ids==0)[0]
+> cluster1
+array([ 0,  3,  4,  7,  8, 11, 13, 15, 17, 19, 20, 22, 25, 26, 28, 30, 33,
+       35, 37, 39, 41, 43, 45, 47, 49, 51])
+
+> cluster2 = np.where(prds.cluster_ids==1)[0]
+> cluster2
+array([ 1,  2,  5,  6,  9, 10, 12, 14, 16, 18, 21, 23, 24, 27, 29, 31, 32,
+       34, 36, 38, 40, 42, 44, 46, 48, 50, 52])
+```
+
+Here we can see that our PDs are roughly equally distributed between two clusters, and we can see that PD 52 is in cluster2, so we can use that as an anchor node. Now let's pick an anchor node to use from cluster1.
+
+Note that while there are many things to consider when picking anchor nodes besides the visual quality of the movies (the quality of the manifold, etc.), it is a good first approximation. Certainly, for the optical-flow based belief propagation, we need to look at the movies to decide if they are moving in the same sense or not, anyway.
+
+> top_PD_cluster1 = np.argmax(prds.occupancy[cluster1])
+> print(f"In cluster1, the PD with the most images is {cluster1[top_PD_cluster1]} with {prds.occupancy[cluster1[top_PD_cluster1]]} images.")
+
+Which will give you "In cluster1, the PD with the most images is 45 with 450 images." - So now we can look at `PrD_46/psi_1.gif`. If you look at this gif you can see it is moving down, while the other is moving up, so we will this define them has anchor nodes with opposite senses as follows:
+
+```
+from ManifoldEM.data_store import Anchor, Sense
+prds.insert_anchor(52, Anchor(sense=Sense.FWD))
+prds.insert_anchor(45, Anchor(sense=Sense.REV))
+prds.save()
+```
+
+** Still to add the last bit of this tutorial.
 
 # Thyroglobulin Tutorial
 
