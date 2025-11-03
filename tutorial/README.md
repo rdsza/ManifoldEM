@@ -47,10 +47,30 @@ Note that when using conda, this bypasses conda's package management system and 
 problems if you later install packages into this environment with `conda install`. It's
 recommended to keep an environment purely for `ManifoldEM`.
 
+# Preprocessing your cryo-EM data
+
+  Before running FI-ManifoldEM, you will need to have run 3D refinement on your dataset using your cryo-EM analysis software of choice.
+  ManifoldEM requires (at minimum) the following parameters within the alignment `.star` file: Image Name; Angle Rot; Angle Tilt; Angle Psi; Origin X; Origin Y; Defocus U; Defocus V; Voltage and Spherical Aberration. To note, ManifoldEM is not currently set up to calculate elliptical defocus; instead, it treats all cases of defocus as spherical. As well, although the software is set up to handle image recentering, if your original micrographs are available, we recommend recentering before ManifoldEM (and thus also setting Origin X and Origin Y values in the alignment file to zero) as to avoid introduction of padding artifacts that could lower the fidelity of the distance matrix. Additionally, the `.mrcs` image stack, will need to be a single file. If you have multiple image stacks, we recommend combining them into a single stack with e.g. `relion_stack_create`. Notably, the average volume file will only be used to help navigate through projection directions (PDs) in the GUI, and is not actually used within the algorithm.
+  
+## Good to know as your initialize your datasets
+  
+  Shannon Angle and Angle Width are calculated from your inputs, and will automatically re-adjust as the user inputs are altered. 
+  
+  The **Shannon Angle** is used to calculate the orientation bin size, and is defined as
+  Shannon Angle = $\frac{\text{Resolution}}{\text{Object Diameter}}$.
+  
+  The **Angle Width** is the the width of the aperture on S2 (in radians), and is defined as
+  Angle Width = Aperture Index $\times$ Shannon Angle.
+  
+  Thus, the combination of Resolution, Object Diameter, and Aperture Index all help define the width of the bins on the orientation sphere that will be used to define how many images are in a given PrD. Getting this right can take some trial and error for each dataset -- usually by adjusting the Aperture Index between 1 and 4. 
+
 # CLI-only RyR Tutorial
 
 The dataset for this tutorial can be downloaded here:
 [RyR1GCs_demo.tar.gz](https://users.flatironinstitute.org/~rblackwell/manifold/RyR1GCs_demo.tar.gz).
+
+
+This is a pretty small dataset that you can run on a laptop or desktop, for which you can check how many processes to use with `nproc`. To initialize, the main inputs are `-p` project name, `-a` alignment file, `-i` image file, `-s` pixel size, `-d` object diameter, `-r` estimated resolution, and `-x` aperture index.
 
 ```
 manifold-cli init -p 20260101_RyR_tutorial -a RyR1GCs_clustRem.star -i RyR1GCs_clustRem.mrcs -s 1.255 -d 360 -r 5.0 -x 4 
@@ -72,7 +92,9 @@ To move forward through the pipeline, it is good to check at least the NLSA movi
 
 Which tells you "The PD with the most images is 52 with 565 images." Since Python is 0 index, we now migrate to `output/20260101_RyR_tutorial/topos` and open `PrD_53/psi_1.gif`.
 
-<img src="images/psi_1.gif" width="100" height="100">
+![](https://raw.githubusercontent.com/flatironinstitute/ManifoldEM/docs-updates/tutorial/images/psi_1.gif)
+
+** Still to add the second part of this tutorial.
 
 # Thyroglobulin Tutorial
 
@@ -90,16 +112,6 @@ The input files (541 GB) for this are available from [this Globus link](https://
   - Resolution: 4.0 Angstrom
   - Object Diameter: 350 Angstrom
   - Aperture Index: 4
-  
-  Before running FI-ManifoldEM, you will need to have run 3D refinement on your dataset using your cryo-EM analysis software of choice.
-  ManifoldEM requires (at minimum) the following parameters within the alignment `.star` file: Image Name; Angle Rot; Angle Tilt; Angle Psi; Origin X; Origin Y; Defocus U; Defocus V; Voltage and Spherical Aberration. To note, ManifoldEM is not currently set up to calculate elliptical defocus; instead, it treats all cases of defocus as spherical. As well, although the software is set up to handle image recentering, if your original micrographs are available, we recommend recentering before ManifoldEM (and thus also setting Origin X and Origin Y values in the alignment file to zero) as to avoid introduction of padding artifacts that could lower the fidelity of the distance matrix. Additionally, the `.mrcs` image stack, will need to be a single file. If you have multiple image stacks, we recommend combining them into a single stack with e.g. `relion_stack_create`. Notably, the average volume file will only be used to help navigate through projection directions (PDs) in the GUI, and is not actually used within the algorithm.
-  
-  Shannon Angle and Angle Width are calculated from your inputs, and will automatically re-adjust as the user inputs are altered. 
-  The **Shannon Angle** is used to calculate the orientation bin size, and is defined as
-  Shannon Angle = $\frac{\text{Resolution}}{\text{Object Diameter}}$.
-  The **Angle Width** is the the width of the aperture on S2 (in radians), and is defined as
-  Angle Width = Aperture Index $\times$ Shannon Angle.
-  Thus, the combination of Resolution, Object Diameter, and Aperture Index all help define the width of the bins on the orientation sphere that will be used to define how many images are in a given PrD. Getting this right can take some trial and error for each dataset -- usually by adjusting the Aperture Index between 1 and 4. 
   
   Note that there is an option to 'Load an existing project' rather than start a new project using an existing `params_my_project.toml` file. The equivalent to this in the CLI is `manifold-cli -R params_my_project.toml`.
   
@@ -163,7 +175,7 @@ manifold-cli -n 96 nlsa-movie params_20260101_thyroglobulin_tutorial.toml
 ## Inspecting Eigenvectors and Aligning Conformational Coordinates
 In this section you can inspect your NLSA movies and pick anchor nodes for belief propagation. 
 
-###GUI
+### GUI
 There are many things to explore here, but generally the best place to start is to first find your most populated PD by clicking on the 'PD Selections' button followed by the 'List Occupancies' button to see the PD with the highest occupancy. Here we see for this thyroglobulin dataset with these particular parameters the PD at index 1059 has the most particles with 994 particles.
 <img src="images/GUI-bestPD.png">
 Then you can close these windows and navigate to this PD by typing in its index in the 'Projection Direction' navigator. Then you can click on 'View Ψ1' to see the NLSA movie for the first psi of this PD and determine whether or not you think it is appropriate to assign as an anchor node.
@@ -172,7 +184,7 @@ Here we only need to pick a single anchor node, but in most real cases you will 
 
 Once the anchor nodes have been selected you can move on by clicking 'Compile Results'.
 
-###CLI
+### CLI
 TBD
 
 ## Compile Results and Calculate Probability Distribution
@@ -180,7 +192,7 @@ TBD
 
 ## Volume Reconstruction
 
-###CLI
+### CLI
 
 -Below to still be shortened.
 -Will also add a quick command-line RYR Tutorial in here.
