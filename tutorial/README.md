@@ -116,8 +116,10 @@ Here we can see that our PDs are roughly equally distributed between two cluster
 
 Note that while there are many things to consider when picking anchor nodes besides the visual quality of the movies (the quality of the manifold, etc.), it is a good first approximation. Certainly, for the optical-flow based belief propagation, we need to look at the movies to decide if they are moving in the same sense or not, anyway.
 
+```
 > top_PD_cluster1 = np.argmax(prds.occupancy[cluster1])
 > print(f"In cluster1, the PD with the most images is {cluster1[top_PD_cluster1]} with {prds.occupancy[cluster1[top_PD_cluster1]]} images.")
+```
 
 Which will give you "In cluster1, the PD with the most images is 45 with 450 images." - So now we can look at `PrD_46/psi_1.gif`. If you look at this gif you can see it is moving down, while the other is moving up, so we will this define them has anchor nodes with opposite senses as follows:
 
