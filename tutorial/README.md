@@ -1,9 +1,6 @@
 # FI-ManifoldEM Quick Start Tutorial
 <img src="images/schematic.png">
 
-The dataset for this tutorial can be downloaded using Globus [here](https://app.globus.org/file-manager?origin_id=02d50b74-e14d-40b7-a555-8addf1ada896&origin_path=%2F) (541 GB).
-
-
 ## Introduction
 
 This tutorial walks through the analysis of a synthetic thyroglobulin dataset generated for the [Flatiron Institute Cryo-EM Heterogeniety Challenge](https://www.simonsfoundation.org/flatiron/center-for-computational-biology/structural-and-molecular-biophysics-collaboration/heterogeneity-in-cryo-electron-microscopy/). The results of the analysis of this datset with FI-ManifoldEM were originally presented in [Ojha et al *Acta Cryst D*. 2025](https://doi.org/10.1107/S2059798325001469). The tutorial walks through the details of how to perform this analysis with both the GUI and CLI versions of FI-ManifoldEM. Note that the CLI is more fully-described in [the main README.md](https://github.com/flatironinstitute/ManifoldEM/tree/main?tab=readme-ov-file#basic-command-line-interface), but the relevant commands are presented here alongside the GUI pipeline for clarity. If you have any issues with or find any errors in this tutorial, please let
@@ -50,6 +47,32 @@ Note that when using conda, this bypasses conda's package management system and 
 problems if you later install packages into this environment with `conda install`. It's
 recommended to keep an environment purely for `ManifoldEM`.
 
+# CLI-only RyR Tutorial
+
+The dataset for this tutorial can be downloaded here:
+[RyR1GCs_demo.tar.gz](https://users.flatironinstitute.org/~rblackwell/manifold/RyR1GCs_demo.tar.gz).
+
+```
+manifold-cli init -p 20260101_RyR_tutorial -a RyR1GCs_clustRem.star -i RyR1GCs_clustRem.mrcs -s 1.255 -d 360 -r 5.0 -x 4 
+manifold-cli -n 16 calc-distance params_20260101_RyR_tutorial.toml
+manifold-cli -n 16 manifold-analysis params_20260101_RyR_tutorial.toml
+manifold-cli -n 16 psi-analysis params_20260101_RyR_tutorial.toml
+manifold-cli -n 16 nlsa-movie params_20260101_RyR_tutorial.toml
+```
+
+To move forward through the pipeline, it is good to check at least the NLSA movie for your most populated projection direction:
+```python
+ from ManifoldEM.data_store import data_store
+ from ManifoldEM.params import params
+ params.load('params_20260101_RyR_tutorial.toml')
+ prds = data_store.get_prds()
+ top_PD = np.argmax(prds.occupancy)
+ print(f"The PD with the most images is {top_PD} with {prds.occupancy[top_PD]} images.")
+```
+
+Which tells you "The PD with the most images is 52 with 565." Since Python is 0 index, we now migrate to `output/20260101_RyR_tutorial/topos` and open `PrD_53/psi_1.gif`.
+
+<img src="images/psi_1.gif">
 
 # Thyroglobulin Tutorial
 
