@@ -70,9 +70,9 @@ To move forward through the pipeline, it is good to check at least the NLSA movi
  print(f"The PD with the most images is {top_PD} with {prds.occupancy[top_PD]} images.")
 ```
 
-Which tells you "The PD with the most images is 52 with 565." Since Python is 0 index, we now migrate to `output/20260101_RyR_tutorial/topos` and open `PrD_53/psi_1.gif`.
+Which tells you "The PD with the most images is 52 with 565 images." Since Python is 0 index, we now migrate to `output/20260101_RyR_tutorial/topos` and open `PrD_53/psi_1.gif`.
 
-<img src="images/psi_1.gif">
+<img src="images/psi_1.gif" width="100" height="100">
 
 # Thyroglobulin Tutorial
 
