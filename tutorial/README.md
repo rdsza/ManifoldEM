@@ -121,7 +121,7 @@ Note that while there are many things to consider when picking anchor nodes besi
 > print(f"In cluster1, the PD with the most images is {cluster1[top_PD_cluster1]} with {prds.occupancy[cluster1[top_PD_cluster1]]} images.")
 ```
 
-Which will give you "In cluster1, the PD with the most images is 45 with 450 images." - So now we can look at `PrD_46/psi_1.gif`. If you look at this gif you can see it is moving down, while the other is moving up, so we will this define them has anchor nodes with opposite senses as follows:
+Which will give you "In cluster1, the PD with the most images is 45 with 450 images." - So now we can look at `PrD_46/psi_1.gif`. If you look at this gif you can see the 'arms' are moving down, while in the first movie they are moving up, so we will this define them as anchor nodes with opposite senses as follows:
 
 ```
 from ManifoldEM.data_store import Anchor, Sense
@@ -230,8 +230,7 @@ TBD
 
 ### CLI
 
--Below to still be shortened.
--Will also add a quick command-line RYR Tutorial in here.
+ ** Below to still be shortened.
 
 ## 7.2 Find Conformational Coordinates
 Once you have filled in the appropriate values for the parameters at the top of the Compilation tab,
