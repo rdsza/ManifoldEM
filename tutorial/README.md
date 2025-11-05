@@ -130,7 +130,18 @@ prds.insert_anchor(45, Anchor(sense=Sense.REV))
 prds.save()
 ```
 
-** Still to add the last bit of this tutorial.
+Once these anchor nodes are defined, you can move forward with the belief propagation step and building the probability landscape:
+```
+> manifold-cli -n 16 find-ccs params_20260101_RyR_tutorial.toml
+> manifold-cli -n 16 probability-landscape params_20260101_RyR_tutorial.toml
+> manifold-cli -n 16 trajectory params_20260101_RyR_tutorial.toml
+```
+
+Finally you can build volumes along this conformational coordinate. Note this requires `relion`, and we recommend the second denoising step:
+```
+> manifold-cli -n 16 utility mrcs2mrc params_20260101_RyR_tutorial.toml
+> manifold-cli utility denoise params_20260101_RyR_tutorial.toml
+```
 
 # Thyroglobulin Tutorial
 
